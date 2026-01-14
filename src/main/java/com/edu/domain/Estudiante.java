@@ -8,6 +8,8 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 
 @Entity
 public class Estudiante {
@@ -21,6 +23,8 @@ public class Estudiante {
 
     private LocalDate nacimiento;
 
+    @ManyToOne
+    @JoinColumn(nullable = false)
     private Centro centro;
 
     public Estudiante() { super(); }
