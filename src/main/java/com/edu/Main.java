@@ -27,7 +27,7 @@ public class Main {
         String bd = "jdbc:sqlite:centro.db";
         
         Map<String, String> props = new HashMap<>();
-        props.put("jakarta.persistence.jdbc.url", bd);
+        //props.put("jakarta.persistence.jdbc.url", bd);
         
         try(EntityManagerFactory emf = Persistence.createEntityManagerFactory("InstitutoPersistente")) {
 
@@ -78,6 +78,22 @@ public class Main {
                 } catch (Exception e) {
                     if (tr != null && tr.isActive()) tr.rollback();
                     logger.error("No se han podido guardar los estudiantes", e);
+                }
+            }
+
+            try(EntityManager em = emf.createEntityManager()) {
+                EntityTransaction tr = em.getTransaction();
+                try {
+                    tr.begin();
+                    centro = em.find(Centro.class, 11004866);
+                    System.out.printf("--- Estudiantes del centro %s ---\n", centro.getNombre());
+                    for( Estudiante e: centro.getEstudiantes()) {
+                        System.out.println(e);
+                    }
+                    tr.commit();
+                } catch (Exception e) {
+                    if (tr != null && tr.isActive()) tr.rollback();
+                    e.printStackTrace();
                 }
             }
         }
