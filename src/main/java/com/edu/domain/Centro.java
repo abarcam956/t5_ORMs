@@ -9,22 +9,20 @@ import jakarta.persistence.Table;
 
 @Entity
 @Table(name = "Centro") // Sólo útil si la table se llama de modo diferente.
+
 public class Centro {
 
     public static enum Titularidad {
         PUBLICA, PRIVADA
     }
 
-    // Establece el id, siempre será generado de forma automática por la BBDD, pero en este ejercicio es manual
     @Id
     //@GeneratedValue(strategy = GenerationType.IDENTITY)  // GENERATED ALWAYS BY IDENTITY
     private Long id;
 
-    // Establece el nombre del centro, 
     @Column(name = "nombre", nullable = false, length = 255)
     private String nombre;
 
-    // Establece la titularidad del centro
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private Titularidad titularidad;

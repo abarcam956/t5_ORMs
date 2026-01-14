@@ -1,59 +1,58 @@
 package com.edu;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import java.util.HashMap;
 import java.util.Map;
 
 import com.edu.domain.Centro;
 import com.edu.domain.Centro.Titularidad;
-
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityManagerFactory;
 import jakarta.persistence.EntityTransaction;
 import jakarta.persistence.Persistence;
 
 public class Main {
+        private static Logger logger = LoggerFactory.getLogger(Main.class);
     public static void main(String[] args) {
 
-        // Hashmap que usaremos más adelante
-        Map<String, String> props = new HashMap<>();
+        ch.qos.logback.classic.Logger hibernateLogger = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger("org.hibernate");
+        String bd = "jdbc:sqlite:centro.db";
+        
+        Map<String, String> properties = new HashMap<>();
+        properties.put("jakarta.persistence.jdbc.url", bd);
+        
+        try(EntityManagerFactory emf = Persistence.createEntityManagerFactory("InstitutoPersistente")) {
 
-        try (EntityManagerFactory emf = Persistence.createEntityManagerFactory("InstitutoPersistente")) {
-            
-            // INSERTAMOS EL PRIMER CENTRO
-            try (EntityManager em = emf.createEntityManager()) {
+            try(EntityManager em = emf.createEntityManager()) {
                 EntityTransaction tr = em.getTransaction();
+
                 try {
                     tr.begin();
-                    Centro centro = new Centro(11004866, "IES Castillo de Luna", Titularidad.PUBLICA);
+                    Centro centro = new Centro(11004866, "IES Castillo de Luna",Titularidad.PUBLICA);
                     em.persist(centro);
                     tr.commit();
-                } catch(Exception err) {
-                    if(tr != null && tr.isActive()) tr.rollback();
-                    throw new RuntimeException("Error al almacenar el centro", err);
-                }  
-            } catch (Exception e) {
-                // TODO: handle exception
+                } catch (Exception e) {
+                    if (tr != null && tr.isActive()) tr.rollback();
+                    e.printStackTrace();
+                }
             }
 
-            // ACTUALIZAMOS EL CENTRO INSERTADO CAMBIANDO SU NOMBRE
-            try (EntityManager em = emf.createEntityManager()) {
+            // Recuperamos el centro y hacemos una modificación
+            try(EntityManager em = emf.createEntityManager()) {
+                Centro centroRecuperado = em.find(Centro.class, 11004866);
+                System.out.println("Centro recuperado: " + centroRecuperado.getNombre() + ", " + centroRecuperado.getTitularidad());
+
                 EntityTransaction tr = em.getTransaction();
                 try {
                     tr.begin();
-                    Centro centro = em.find(Centro.class, 11004866);
-                    centro.setNombre("I.E.S. Castillo de Luna");
+                    centroRecuperado.setNombre("IES Nuevo Nombre");
                     tr.commit();
-                } catch(Exception err) {
-                    if(tr != null && tr.isActive()) tr.rollback();
-                    throw new RuntimeException("Error al obtener el centro", err);
-                }  
-            } catch (Exception e) {
-                // TODO: handle exception
+                } catch (Exception e) {
+                    if (tr != null && tr.isActive()) tr.rollback();
+                    e.printStackTrace();
+                }
             }
-
-        } catch (Exception e) {
-            // TODO: handle exception
         }
-
     }
 }
