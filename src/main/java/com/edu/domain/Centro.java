@@ -1,6 +1,8 @@
 package com.edu.domain;
 
+import jakarta.persistence.AttributeConverter;
 import jakarta.persistence.Column;
+import jakarta.persistence.Convert;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -12,8 +14,17 @@ import jakarta.persistence.Table;
 
 public class Centro {
 
-    public static enum Titularidad {
-        PUBLICA, PRIVADA
+    private static class TitularidadConverter implements AttributeConverter<Titularidad, String> {
+
+        @Override
+        public String convertToDatabaseColumn(Titularidad titularidad) {
+            return titularidad.toString();
+        }
+
+        @Override
+        public Titularidad convertToEntityAttribute(String column) {
+            return Titularidad.fromString(column);
+        }
     }
 
     @Id
@@ -23,8 +34,7 @@ public class Centro {
     @Column(name = "nombre", nullable = false, length = 255)
     private String nombre;
 
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
+    @Convert(converter = TitularidadConverter.class)
     private Titularidad titularidad;
 
     public Centro() {

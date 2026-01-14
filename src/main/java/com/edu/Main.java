@@ -6,7 +6,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 import com.edu.domain.Centro;
-import com.edu.domain.Centro.Titularidad;
+import com.edu.domain.Titularidad;
+
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityManagerFactory;
 import jakarta.persistence.EntityTransaction;
@@ -19,8 +20,8 @@ public class Main {
         ch.qos.logback.classic.Logger hibernateLogger = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger("org.hibernate");
         String bd = "jdbc:sqlite:centro.db";
         
-        Map<String, String> properties = new HashMap<>();
-        properties.put("jakarta.persistence.jdbc.url", bd);
+        Map<String, String> props = new HashMap<>();
+        //props.put("jakarta.persistence.jdbc.url", bd);
         
         try(EntityManagerFactory emf = Persistence.createEntityManagerFactory("InstitutoPersistente")) {
 

@@ -12,7 +12,7 @@
         <provider>org.hibernate.jpa.HibernatePersistenceProvider</provider>
 
         <!-- Entidades (deberían autodetectarse si están anotadas con @Entity) -->
-        <class>edu.domain.Centro</class>
+        <class>com.edu.domain.Centro</class>
         <!-- Más clases ... -->
 
         <properties>
