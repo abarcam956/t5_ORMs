@@ -2,12 +2,16 @@ package com.edu;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.Map;
 
 import com.edu.domain.Centro;
+import com.edu.domain.Estudiante;
 import com.edu.domain.Titularidad;
 
+import ch.qos.logback.classic.Level;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityManagerFactory;
 import jakarta.persistence.EntityTransaction;
@@ -18,10 +22,12 @@ public class Main {
     public static void main(String[] args) {
 
         ch.qos.logback.classic.Logger hibernateLogger = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger("org.hibernate");
+        hibernateLogger.setLevel(Level.WARN);
+
         String bd = "jdbc:sqlite:centro.db";
         
         Map<String, String> props = new HashMap<>();
-        //props.put("jakarta.persistence.jdbc.url", bd);
+        props.put("jakarta.persistence.jdbc.url", bd);
         
         try(EntityManagerFactory emf = Persistence.createEntityManagerFactory("InstitutoPersistente")) {
 
@@ -40,6 +46,7 @@ public class Main {
             }
 
             // Recuperamos el centro y hacemos una modificación
+            Centro centro = null;
             try(EntityManager em = emf.createEntityManager()) {
                 Centro centroRecuperado = em.find(Centro.class, 11004866);
                 System.out.println("Centro recuperado: " + centroRecuperado.getNombre() + ", " + centroRecuperado.getTitularidad());
@@ -52,6 +59,25 @@ public class Main {
                 } catch (Exception e) {
                     if (tr != null && tr.isActive()) tr.rollback();
                     e.printStackTrace();
+                }
+            }
+
+            Estudiante[] estudiantes = new Estudiante[] {
+                new Estudiante("Manolo", LocalDate.of(2000, 01, 01), centro),
+                new Estudiante("Marisa", LocalDate.of(2004, 10, 12), centro)
+            };
+
+            try(EntityManager em = emf.createEntityManager()) {
+                EntityTransaction tr = em.getTransaction();
+                try {
+                    tr.begin();
+                    for (Estudiante e : estudiantes) {
+                        em.persist(e);
+                    }
+                    tr.commit();
+                } catch (Exception e) {
+                    if (tr != null && tr.isActive()) tr.rollback();
+                    logger.error("No se han podido guardar los estudiantes", e);
                 }
             }
         }

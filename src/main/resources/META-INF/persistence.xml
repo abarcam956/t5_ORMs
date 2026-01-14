@@ -13,6 +13,7 @@
 
         <!-- Entidades (deberían autodetectarse si están anotadas con @Entity) -->
         <class>com.edu.domain.Centro</class>
+        <class>com.edu.domain.Estudiante</class>
         <!-- Más clases ... -->
 
         <properties>

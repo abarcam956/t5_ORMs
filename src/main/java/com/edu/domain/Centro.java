@@ -1,10 +1,13 @@
 package com.edu.domain;
 
+import java.util.List;
+
 import jakarta.persistence.AttributeConverter;
 import jakarta.persistence.Column;
 import jakarta.persistence.Convert;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 
 @Entity
@@ -34,6 +37,9 @@ public class Centro {
 
     @Convert(converter = TitularidadConverter.class)
     private Titularidad titularidad;
+
+    @OneToMany(mappedBy = "centro")
+    private List<Estudiante> estudiantes;
 
     public Centro() {
         super();
@@ -74,9 +80,12 @@ public class Centro {
         this.titularidad = titularidad;
     }
 
-    
     @Override
     public String toString() {
         return String.format("%s (%d)", getNombre(), getId());
+    }
+
+    public List<Estudiante> getEstudiantes() {
+        return estudiantes;
     }
 }
