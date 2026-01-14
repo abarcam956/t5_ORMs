@@ -1,6 +1,7 @@
 package com.edu.domain;
 
 import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -20,16 +21,19 @@ public class Estudiante {
 
     private LocalDate nacimiento;
 
+    private Centro centro;
+
     public Estudiante() { super(); }
 
-    public Estudiante initialize(String nombre, LocalDate nacimiento) {
+    public Estudiante initialize(String nombre, LocalDate nacimiento, Centro centro) {
         setNombre(nombre);
         setNacimiento(nacimiento);
+        setCentro(centro);
         return this;
     }
 
-    public Estudiante(String nombre, LocalDate nacimiento) {
-        initialize(nombre, nacimiento);
+    public Estudiante(String nombre, LocalDate nacimiento, Centro centro) {
+        initialize(nombre, nacimiento, centro);
     }
 
     public Long getId() {
@@ -44,6 +48,7 @@ public class Estudiante {
         return nacimiento;
     }
 
+    @SuppressWarnings("unused")
     private void setId(Long id) {
         this.id = id;
     }
@@ -56,5 +61,21 @@ public class Estudiante {
         this.nacimiento = nacimiento;
     }
 
-    
+    public long getEdad() {
+        LocalDate hoy = LocalDate.now();
+        return ChronoUnit.YEARS.between(nacimiento, hoy);
+    }
+
+    public Centro getCentro() {
+        return centro;
+    }
+
+    public void setCentro(Centro centro) {
+        this.centro = centro;
+    }    
+
+    @Override
+    public String toString() {
+        return String.format("%s, %d años", nombre, getEdad());
+    }
 }
