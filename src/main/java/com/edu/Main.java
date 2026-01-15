@@ -5,6 +5,7 @@ import org.slf4j.LoggerFactory;
 
 import java.time.LocalDate;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import com.edu.domain.Centro;
@@ -47,7 +48,7 @@ public class Main {
             return c;
         });
 
-        // Transacción sin resultado para agregar un centro
+        // Transacción sin resultado para agregar una lista de estudiantes
         JpaBackend.transaction(idx, em -> {
             Estudiante[] estudiantes = new Estudiante[] {
                 new Estudiante("Manolo", LocalDate.of(2000, 01, 01), centro),
@@ -59,14 +60,17 @@ public class Main {
         });
 
         // Comprobar estudiantes
-        JpaBackend.transaction(idx, em -> {
-            // Busca el centro en la base datos
-            Centro c = em.find(Centro.class, 11004866);
-            System.out.printf("--- Estudiantes del centro '%s' ---\n", c.getNombre());
+        List<Estudiante> estudiantes = JpaBackend.transactionR(em -> {
             
-            // Realiza un for dentro de los estudiantes del centro
-            c.getEstudiantes().forEach(System.out::println);
+            Centro c = em.find(Centro.class, 11004866);
+            List<Estudiante> lista = c.getEstudiantes();
+            //for(Estudiante e: ee) {
+            //)}
+            return lista;
         });
+
+        System.out.printf("-- Estudiantes de '%s' --\n ", centro.getNombre() + ":");
+        estudiantes.forEach(System.out::println);
 
         // Resetea el hashmap de valores y objetos y cierra objetos abiertos
         JpaBackend.reset();
