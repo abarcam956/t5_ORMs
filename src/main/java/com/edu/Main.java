@@ -17,6 +17,7 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityManagerFactory;
 import jakarta.persistence.EntityTransaction;
 import jakarta.persistence.Persistence;
+import jakarta.persistence.TypedQuery;
 
 public class Main {
         private static Logger logger = LoggerFactory.getLogger(Main.class);
@@ -61,16 +62,24 @@ public class Main {
 
         // Comprobar estudiantes
         List<Estudiante> estudiantes = JpaBackend.transactionR(em -> {
-            
-            Centro c = em.find(Centro.class, 11004866);
-            List<Estudiante> lista = c.getEstudiantes();
-            //for(Estudiante e: ee) {
-            //)}
-            return lista;
+            TypedQuery<Estudiante> query = em.createQuery("SELECT e FROM Estudiante e", Estudiante.class);
+            return query.getResultList();
         });
 
         System.out.printf("-- Estudiantes de '%s' --\n ", centro.getNombre() + ":");
         estudiantes.forEach(System.out::println);
+
+        // Creamos una transacción nueva para obtener únicamente los nombres de los estudiantes
+        JpaBackend.transaction(em -> {
+            // Se establece una consulta a la tabla de Estudiante donde obtenemos solo su nombre
+            TypedQuery<String> query = em.createQuery("SELECT e.nombre FROM Estudiante e", String.class);
+
+            // Y se establece una lista con los nombres obtenidos
+            List<String> nombres = query.getResultList();
+            System.out.println("-- Listado de nombres de alumno --");
+            nombres.forEach(System.out::println);
+        });
+
 
         // Resetea el hashmap de valores y objetos y cierra objetos abiertos
         JpaBackend.reset();
