@@ -115,6 +115,14 @@ public class JpaBackend {
      * Elimina todos los objetos previamente creados.
      */
     public static void reset() {
+        // Cierra todas las instancias abiertas
+        for(EntityManagerFactory emf: instances.values()) {
+            if(emf.isOpen()) emf.close();
+        }
+
+        // ALTERNATIVA
+        // instances.values().forEach(emf -> emf.close());
+
         instances.clear();
         keys.clear();
     }

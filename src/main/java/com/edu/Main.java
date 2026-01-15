@@ -41,6 +41,7 @@ public class Main {
 
         // Transacción con resultado (se aplica a la bbdd existente)
         Centro centro = JpaBackend.transactionR(idx, em -> {
+            // Busca el centro en la base datos
             Centro c = em.find(Centro.class, 11004866);
             c.setNombre("I.E.S. Castillo de Luna");
             return c;
@@ -57,11 +58,17 @@ public class Main {
             for(Estudiante e: estudiantes) em.persist(e);
         });
 
-        // Comprobar estudiantees
+        // Comprobar estudiantes
         JpaBackend.transaction(idx, em -> {
+            // Busca el centro en la base datos
             Centro c = em.find(Centro.class, 11004866);
             System.out.printf("--- Estudiantes del centro '%s' ---\n", c.getNombre());
+            
+            // Realiza un for dentro de los estudiantes del centro
             c.getEstudiantes().forEach(System.out::println);
         });
+
+        // Resetea el hashmap de valores y objetos y cierra objetos abiertos
+        JpaBackend.reset();
     }
 }
