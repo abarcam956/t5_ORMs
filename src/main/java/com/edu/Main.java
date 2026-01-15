@@ -19,6 +19,7 @@ import jakarta.persistence.Persistence;
 
 public class Main {
         private static Logger logger = LoggerFactory.getLogger(Main.class);
+
     public static void main(String[] args) {
 
         ch.qos.logback.classic.Logger hibernateLogger = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger("org.hibernate");
@@ -29,11 +30,11 @@ public class Main {
         Map<String, String> props = new HashMap<>();
         //props.put("jakarta.persistence.jdbc.url", bd);
         
-        try(EntityManagerFactory emf = Persistence.createEntityManagerFactory("InstitutoPersistente")) {
+        try(EntityManagerFactory emf = Persistence.createEntityManagerFactory("InstitutoPersistente", props)) {
 
+            // Agregamos un centro a la base de datos
             try(EntityManager em = emf.createEntityManager()) {
                 EntityTransaction tr = em.getTransaction();
-
                 try {
                     tr.begin();
                     Centro centro = new Centro(11004866, "IES Castillo de Luna",Titularidad.PUBLICA);
@@ -41,7 +42,7 @@ public class Main {
                     tr.commit();
                 } catch (Exception e) {
                     if (tr != null && tr.isActive()) tr.rollback();
-                    e.printStackTrace();
+                    logger.error("Imposible añadir un centro a la base de datos");
                 }
             }
 
@@ -54,11 +55,11 @@ public class Main {
                 EntityTransaction tr = em.getTransaction();
                 try {
                     tr.begin();
-                    centroRecuperado.setNombre("IES Nuevo Nombre");
+                    centroRecuperado.setNombre("I.E.S. Castillo de Luna");
                     tr.commit();
                 } catch (Exception e) {
                     if (tr != null && tr.isActive()) tr.rollback();
-                    e.printStackTrace();
+                    logger.error("Imposible obtener el centro y su nombre");
                 }
             }
 
