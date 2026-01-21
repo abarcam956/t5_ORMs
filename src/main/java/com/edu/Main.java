@@ -127,15 +127,15 @@ public class Main {
             TypedQuery<Tuple> query = em.createQuery("SELECT c.nombre, COUNT(c.estudiantes) AS cantidad FROM Centro c", Tuple.class);
             */
 
-            TypedQuery<Tuple> query = em.createQuery("SELECT e.centro.nombre AS nombre, COUNT(e) AS cantidad FROM Estudiante e GROUP BY e.centro.nombre", Tuple.class);
+            TypedQuery<Tuple> query = em.createQuery("SELECT e.centro AS centro, COUNT(e) AS cantidad FROM Estudiante e GROUP BY e.centro.nombre", Tuple.class);
 
             List<Tuple> resultados = query.getResultList();
             System.out.println("-- Cantidad de alumosnos por centro --");
             for(Tuple t: resultados) {
-                String nombre = t.get("nombre", String.class);
+                Centro centro = t.get("centro", Centro.class);
                 Long cantidad = t.get("cantidad", Long.class);
 
-                System.out.printf("%s: %d estudiantes.\n", nombre, cantidad);
+                System.out.printf("%s: %d estudiantes.\n", centro, cantidad);
             }
 
         });
