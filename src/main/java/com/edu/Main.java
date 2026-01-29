@@ -31,9 +31,15 @@ public class Main {
         // Se crea un objeto para realizar transacciones
         int idx = JpaBackend.createEntityManagerFactory("InstitutoPersistente", props);
 
-        // Transacción sin resultado para agregar un centro
+        // Transacción sin resultado para agregar un centro Castillo de Luna
         JpaBackend.transaction(idx, em -> {
             Centro centro = new Centro(11004866, "IES Castillo de Luna",Titularidad.PUBLICA);
+            em.persist(centro);
+        });
+
+        // Transacción sin resultado para agregar un centro Lara
+        JpaBackend.transaction(idx, em -> {
+            Centro centro = new Centro(11700603, "IES Lara del Rey",Titularidad.PUBLICA);
             em.persist(centro);
         });
 
@@ -83,16 +89,31 @@ public class Main {
             nombres.forEach(System.out::println);
         });
 
+        // Transacción con consulta JOIN para extraer todos los estudiantes con centro
         estudiantes = JpaBackend.transactionR(em -> {
             TypedQuery<Estudiante> ee = em.createQuery(
                 "SELECT e FROM Estudiante e JOIN e.centro c", Estudiante.class
             );
-
             return ee.getResultList();
         });
 
         System.out.println("--- Lista de estudiantes con centro ---");
         estudiantes.forEach(System.out::println);
+
+        // Transacción con consulta JOIN para extraer todos los estudiantes
+        estudiantes = JpaBackend.transactionR(em -> {
+            TypedQuery<Estudiante> ee = em.createQuery(
+                "SELECT e FROM Estudiante e LEFT JOIN e.centro c", Estudiante.class
+            );
+            return ee.getResultList();
+        });
+
+        System.out.println("--- Lista de todos los estudiantes ---");
+        for(Estudiante e: estudiantes) {
+            Centro centro = e.getCentro();
+            System.out.printf("%s: %s.\n", e, centro != null ? centro.getNombre() : "***");
+        }
+
         // Resetea el hashmap de valores y objetos y cierra objetos abiertos
         JpaBackend.reset();
     }
