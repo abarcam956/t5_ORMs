@@ -83,7 +83,16 @@ public class Main {
             nombres.forEach(System.out::println);
         });
 
+        estudiantes = JpaBackend.transactionR(em -> {
+            TypedQuery<Estudiante> ee = em.createQuery(
+                "SELECT e FROM Estudiante e JOIN e.centro c", Estudiante.class
+            );
 
+            return ee.getResultList();
+        });
+
+        System.out.println("--- Lista de estudiantes con centro ---");
+        estudiantes.forEach(System.out::println);
         // Resetea el hashmap de valores y objetos y cierra objetos abiertos
         JpaBackend.reset();
     }
