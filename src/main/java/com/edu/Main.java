@@ -13,7 +13,11 @@ import com.edu.domain.Estudiante;
 import com.edu.domain.Titularidad;
 
 import ch.qos.logback.classic.Level;
+import jakarta.persistence.Tuple;
 import jakarta.persistence.TypedQuery;
+import jakarta.persistence.criteria.CriteriaBuilder;
+import jakarta.persistence.criteria.CriteriaQuery;
+import jakarta.persistence.criteria.Root;
 
 public class Main {
         private static Logger logger = LoggerFactory.getLogger(Main.class);
@@ -113,6 +117,45 @@ public class Main {
             Centro centro = e.getCentro();
             System.out.printf("%s: %s.\n", e, centro != null ? centro.getNombre() : "***");
         }
+
+        // TRANSACCIÓN USANDO CRITERIA API
+        JpaBackend.transaction(em -> {
+
+            // LISTA DE ESTUDIANTES COMPLETA
+            System.out.println("\n\n--- Lista de estudiantes con Criteria ---");
+            CriteriaBuilder cb = em.getCriteriaBuilder();
+            CriteriaQuery<Estudiante> criteria = cb.createQuery(Estudiante.class);
+            Root<Estudiante> root = criteria.from(Estudiante.class);
+            criteria.select(root);
+
+            TypedQuery<Estudiante> tq = em.createQuery(criteria);
+            tq.getResultList().forEach(System.out::println);
+
+            // LISTA DE NOMBRES DE LOS ESTUDIANTES
+            System.out.println("\n-- Lista de nombres de estudiantes con Criteria ---");
+            CriteriaQuery<String> criteriaN = cb.createQuery(String.class);
+            root = criteriaN.from(Estudiante.class);
+            criteriaN.select(root.get("nombre"));
+
+            TypedQuery<String> tqN = em.createQuery(criteriaN);
+            tqN.getResultList().forEach(System.out::println);
+
+            // LISTA DE NOMBRES E IDs DE LOS ESTUDIANTES
+            System.out.println("\n-- Lista de nombres e IDs de estudiantes con Criteria ---");
+            CriteriaQuery<Tuple> criteriaT = cb.createTupleQuery();
+            root = criteriaT.from(Estudiante.class);
+            criteriaT.select( cb.tuple(
+                root.get("nombre").alias("nombre"),
+                root.get("id").alias("id")
+            ));
+
+            TypedQuery<Tuple> tqT = em.createQuery(criteriaT);
+            tqT.getResultList().forEach(t -> {
+                String nombre = t.get("nombre", String.class);
+                Long id = t.get("id", Long.class);
+                System.out.printf("%d: %s.\n", id, nombre);
+            });
+        });
 
         // Resetea el hashmap de valores y objetos y cierra objetos abiertos
         JpaBackend.reset();
