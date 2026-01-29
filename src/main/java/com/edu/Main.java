@@ -13,10 +13,6 @@ import com.edu.domain.Estudiante;
 import com.edu.domain.Titularidad;
 
 import ch.qos.logback.classic.Level;
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.EntityManagerFactory;
-import jakarta.persistence.EntityTransaction;
-import jakarta.persistence.Persistence;
 import jakarta.persistence.TypedQuery;
 
 public class Main {
@@ -42,18 +38,25 @@ public class Main {
         });
 
         // Transacción con resultado (se aplica a la bbdd existente)
-        Centro centro = JpaBackend.transactionR(idx, em -> {
+        Centro castillo = JpaBackend.transactionR(idx, em -> {
             // Busca el centro en la base datos
             Centro c = em.find(Centro.class, 11004866);
             c.setNombre("I.E.S. Castillo de Luna");
             return c;
         });
 
+        Centro lara = JpaBackend.transactionR(em -> {
+            return em.find(Centro.class, 11700603);
+        });
+
         // Transacción sin resultado para agregar una lista de estudiantes
         JpaBackend.transaction(idx, em -> {
             Estudiante[] estudiantes = new Estudiante[] {
-                new Estudiante("Manolo", LocalDate.of(2000, 01, 01), centro),
-                new Estudiante("Marisa", LocalDate.of(2004, 10, 12), centro)
+                new Estudiante("Manolo", LocalDate.of(2000, 01, 01), castillo),
+                new Estudiante("Marisa", LocalDate.of(2004, 10, 12), castillo),
+                new Estudiante("Alberto", LocalDate.of(2003, 5, 22), castillo),
+                new Estudiante("Lucía", LocalDate.of(2002, 7, 2), lara),
+                new Estudiante("Paco", LocalDate.of(2004, 7, 21), null)
             };
 
             // Por cada estudiante de la lista, se añade a la base de datos (acción persist)
@@ -66,7 +69,7 @@ public class Main {
             return query.getResultList();
         });
 
-        System.out.printf("-- Estudiantes de '%s' --\n ", centro.getNombre() + ":");
+        System.out.printf("-- Estudiantes de '%s' --\n ", castillo.getNombre() + ":");
         estudiantes.forEach(System.out::println);
 
         // Creamos una transacción nueva para obtener únicamente los nombres de los estudiantes
