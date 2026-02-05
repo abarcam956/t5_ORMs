@@ -10,6 +10,7 @@ import java.util.Map;
 
 import com.edu.domain.Centro;
 import com.edu.domain.Estudiante;
+import com.edu.domain.Estudiante_;
 import com.edu.domain.Titularidad;
 
 import ch.qos.logback.classic.Level;
@@ -135,7 +136,7 @@ public class Main {
             System.out.println("\n-- Lista de nombres de estudiantes con Criteria ---");
             CriteriaQuery<String> criteriaN = cb.createQuery(String.class);
             root = criteriaN.from(Estudiante.class);
-            criteriaN.select(root.get("nombre"));
+            criteriaN.select(root.get(Estudiante_.nombre));
 
             TypedQuery<String> tqN = em.createQuery(criteriaN);
             tqN.getResultList().forEach(System.out::println);
@@ -145,14 +146,14 @@ public class Main {
             CriteriaQuery<Tuple> criteriaT = cb.createTupleQuery();
             root = criteriaT.from(Estudiante.class);
             criteriaT.select( cb.tuple(
-                root.get("nombre").alias("nombre"),
-                root.get("id").alias("id")
+                root.get(Estudiante_.nombre).alias("nombre"),
+                root.get(Estudiante_.id).alias("id")
             ));
 
             TypedQuery<Tuple> tqT = em.createQuery(criteriaT);
             tqT.getResultList().forEach(t -> {
-                String nombre = t.get("nombre", String.class);
-                Long id = t.get("id", Long.class);
+                String nombre = t.get(Estudiante_.NOMBRE, String.class);
+                Long id = t.get(Estudiante_.ID, Long.class);
                 System.out.printf("%d: %s.\n", id, nombre);
             });
         });
