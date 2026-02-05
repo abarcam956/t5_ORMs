@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Map;
 
 import com.edu.domain.Centro;
+import com.edu.domain.Centro_;
 import com.edu.domain.Estudiante;
 import com.edu.domain.Estudiante_;
 import com.edu.domain.Titularidad;
@@ -18,6 +19,8 @@ import jakarta.persistence.Tuple;
 import jakarta.persistence.TypedQuery;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
+import jakarta.persistence.criteria.Join;
+import jakarta.persistence.criteria.JoinType;
 import jakarta.persistence.criteria.Root;
 
 public class Main {
@@ -156,6 +159,89 @@ public class Main {
                 Long id = t.get(Estudiante_.ID, Long.class);
                 System.out.printf("%d: %s.\n", id, nombre);
             });
+
+            // LISTA DE ALUMNOS NO MATRICULADOS USANDO CONDICIONES WHERE
+            CriteriaQuery<Estudiante> criteriaNM = cb.createQuery(Estudiante.class);
+            Root<Estudiante> rootNM = criteriaNM.from(Estudiante.class);
+            criteriaNM.select(rootNM);
+            // CONDICIÓN
+            criteriaNM.where(cb.not(cb.isNull(root.get(Estudiante_.CENTRO))));
+
+            System.out.println("\n-- Lista de estudiantes con matrícula --");
+            TypedQuery<Estudiante> te = em.createQuery(criteriaNM);
+            te.getResultList().forEach(System.out::println);
+        });
+
+        // TRANSACCION DE ORDENACIÓN
+        JpaBackend.transaction(em -> {
+            CriteriaBuilder cb = em.getCriteriaBuilder();
+
+            // Lista de alumnos ordenados por fecha de nacimiento
+            CriteriaQuery<Estudiante> query = cb.createQuery(Estudiante.class);
+            Root<Estudiante> root = query.from(Estudiante.class);
+            query.select(root);
+            query.orderBy(cb.desc(root.get(Estudiante_.nacimiento)));
+
+            System.out.println("\n-- Estudiantes ordenados por fecha de nacimiento --");
+            TypedQuery<Estudiante> tq = em.createQuery(query);
+            tq.getResultList().forEach(System.out::println);
+        });
+
+        // TRANSACCIÓN DE AGRUPACIÓN
+        JpaBackend.transaction(em -> {
+            CriteriaBuilder cb = em.getCriteriaBuilder();
+
+            CriteriaQuery<Tuple> query = cb.createQuery(Tuple.class);
+            Root<Estudiante> root = query.from(Estudiante.class);
+            query.select(cb.tuple(
+                root.get(Estudiante_.CENTRO).alias("centro"),
+                cb.count(root).alias("cantidad")
+            ));
+
+            // Realizamos el group by
+            query.groupBy(root.get(Estudiante_.CENTRO));
+            query.orderBy(cb.asc(cb.count(root)));
+            
+            System.out.println("\n-- Lista de centros --");
+            TypedQuery<Tuple> tq = em.createQuery(query);
+            tq.getResultList().forEach(t -> {
+                Centro centro = t.get("centro", Centro.class);
+                long cantidad = t.get("cantidad", Long.class);
+                System.out.printf("%s: %d alumnos \n", centro, cantidad);
+            });
+        });
+
+        // TRANSACCIÓN USANDO JOINS
+        JpaBackend.transaction(em -> {
+            CriteriaBuilder cb = em.getCriteriaBuilder();
+
+            CriteriaQuery<Estudiante> query = cb.createQuery(Estudiante.class);
+            Root<Estudiante> root = query.from(Estudiante.class);
+            //Realizamos el join antes del select
+            Join<Estudiante, Centro> centro = root.join(Estudiante_.centro, JoinType.INNER);
+            query.select(root);
+            
+            System.out.println("\n-- Estudiantes con su centro --");
+            TypedQuery<Estudiante> tq = em.createQuery(query);
+            tq.getResultList().forEach(e -> {
+                System.out.printf("%s: %s\n", e , e.getCentro());
+            });
+        });
+
+        // TRANSACCIÓN CON JOINS AL REVES
+        JpaBackend.transaction(em -> {
+            CriteriaBuilder cb=  em.getCriteriaBuilder();
+
+            CriteriaQuery<Centro> query = cb.createQuery(Centro.class);
+            Root<Centro> root = query.from(Centro.class);
+            // Realizamos el join
+            Join<Centro, Estudiante> estudiante = root.join(Centro_.estudiantes, JoinType.INNER);
+            query.select(root);
+            // query.distinct(true);
+
+            System.out.println("\n-- Centros con estudiante --");
+            TypedQuery<Centro> tq = em.createQuery(query);
+            tq.getResultList().forEach(System.out::println);
         });
 
         // Resetea el hashmap de valores y objetos y cierra objetos abiertos
