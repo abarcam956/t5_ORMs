@@ -191,23 +191,26 @@ public class Main {
         JpaBackend.transaction(em -> {
             CriteriaBuilder cb = em.getCriteriaBuilder();
 
-            CriteriaQuery<Tuple> query = cb.createQuery(Tuple.class);
+            // Usamos record en vez de tuplas, para un resultado más profesional 
+            record CentroCantidad(Centro centro, long cantidad) {};
+
+            CriteriaQuery<CentroCantidad> query = cb.createQuery(CentroCantidad.class);
             Root<Estudiante> root = query.from(Estudiante.class);
-            query.select(cb.tuple(
-                root.get(Estudiante_.CENTRO).alias("centro"),
-                cb.count(root).alias("cantidad")
-            ));
+            
+            // Creamos variables para luego usarlas en el select y el group by.
+            var centro = root.get(Estudiante_.centro);
+            var cantidad = cb.count(root);
+
+            query.select(cb.construct(CentroCantidad.class, centro, cantidad));
 
             // Realizamos el group by
-            query.groupBy(root.get(Estudiante_.CENTRO));
-            query.orderBy(cb.asc(cb.count(root)));
+            query.groupBy(centro);
+            query.orderBy(cb.desc(cantidad));
             
             System.out.println("\n-- Lista de centros --");
-            TypedQuery<Tuple> tq = em.createQuery(query);
+            TypedQuery<CentroCantidad> tq = em.createQuery(query);
             tq.getResultList().forEach(t -> {
-                Centro centro = t.get("centro", Centro.class);
-                long cantidad = t.get("cantidad", Long.class);
-                System.out.printf("%s: %d alumnos \n", centro, cantidad);
+                System.out.printf("%s: %d alumnos \n", t.centro(), t.cantidad());
             });
         });
 
